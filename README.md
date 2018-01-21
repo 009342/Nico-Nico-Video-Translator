@@ -29,3 +29,9 @@ https://github.com/bmg0001/Bing-Translator-API
 ## 주의
 
 이 프로그램을 사용하여 발생할 수 있는 모든 책임은 사용자에게 있습니다.
+
+또한 이 프로그램의 소스코드는 GNU 일반 공중 사용 허가서(GNU General Public License)에 의해 보호받습니다.
+
+GNU 일반 공중 사용 허가서(GNU General Public License)의 전문은 다음을 참고하십시오.
+
+https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
