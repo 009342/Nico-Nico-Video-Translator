@@ -10,6 +10,8 @@ C:\Windows\System32\drivers\etc\hosts 파일에 아래의 줄을 추가해주세
 
 127.0.0.1 nmsg.nicovideo.jp
 
+작동하지 않을경우, 80번 포트가 열려있는지 확인해주세요.
+
 ## 알려진 버그
 
 일부 대사가 번역되지 않습니다.
