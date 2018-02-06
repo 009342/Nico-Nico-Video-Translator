@@ -14,22 +14,42 @@ http://sshbrain.tistory.com/48
 
 2. 파일->열기를 눌러 파일이름 항목에 C:\Windows\System32\drivers\etc\hosts 를 적고 열기를 눌러주세요. 
 
-3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp** 를 추가해주세요.
+3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp** 를 추가해주세요. 추가하면 다음과 같이 되야 합니다.
+<pre><code># Copyright (c) 1993-2009 Microsoft Corp.
+#
+# This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
+#
+# This file contains the mappings of IP addresses to host names. Each
+# entry should be kept on an individual line. The IP address should
+# be placed in the first column followed by the corresponding host name.
+# The IP address and the host name should be separated by at least one
+# space.
+#
+# Additionally, comments (such as these) may be inserted on individual
+# lines or following the machine name denoted by a '#' symbol.
+#
+# For example:
+#
+#      102.54.94.97     rhino.acme.com          # source server
+#       38.25.63.10     x.acme.com              # x client host
+
+# localhost name resolution is handled within DNS itself.
+#	127.0.0.1       localhost
+#	::1             localhost
+
+127.0.0.1 nmsg.nicovideo.jp
+기타 사용자가 추가한 구문들...</pre></code>
 
 4. https://github.com/009342/Nico-Nico-Video-Translator/releases 에서 최신버전의 니코니코 동화 번역기를 다운받아주세요.
 
 5. 정상적으로 실행이 되면, 다음과 같이 실행됩니다.
-
-<pre><code>
-Bing 번역 쿠키를 가져오는 중입니다...
+<pre><code>Bing 번역 쿠키를 가져오는 중입니다...
 Bing 쿠키 저장 완료!
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 </pre></code>
 
 만약 위와 같은 메세지가 뜨지 않고, 다음과 같은 오류가 뜰 경우,
-
-<pre><code>
-Bing 번역 쿠키를 가져오는 중입니다...
+<pre><code>Bing 번역 쿠키를 가져오는 중입니다...
 Bing 쿠키 저장 완료!
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 
@@ -43,9 +63,7 @@ Bing 쿠키 저장 완료!
 80번 포트가 사용외고 있는지 확인해주시기 바랍니다.(웹서버, 기타 80번 포트를 사용하는 프로그램들...)
 
 6. 니코니코 동화 사이트에 접속하여 동영상을 보게 되면,
-
-<pre><code>
-Bing 번역 쿠키를 가져오는 중입니다...
+<pre><code>Bing 번역 쿠키를 가져오는 중입니다...
 Bing 쿠키 저장 완료!
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 접속 :127.0.0.1:8258
@@ -92,7 +110,7 @@ Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
 
 일부 대사가 번역되지 않습니다.
 
-플래시 플레이어를 지원하지 않습니다.
+플래시 플레이어를 지원하지 않습니다. 이 버그는, 플래시 플레이어가 간헐적으로 작동하는 관계로 잠시 후 다시 시도해주시거나 새로 고침을 눌러 HTML5 플레이어로 영상을 시청해주시기 바랍니다.
 
 일부 스크립트의 마지막에 '/' 와 같은 일부 특수문자가 들어가 있을 경우, Bing 번역의 한계로 아래와 같은 오류가 발생할 수 있습니다.
 
