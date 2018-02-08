@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>NicoNicoTranslator</RootNamespace>
     <AssemblyName>NicoNicoTranslator</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
@@ -50,6 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\googleTranslate\src\GoogleTranslateFreeApi.csproj">
+      <Project>{76e7bc79-fc5e-4b23-a9a2-2d8dd1079245}</Project>
+      <Name>GoogleTranslateFreeApi</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

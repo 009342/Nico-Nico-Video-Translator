@@ -8,73 +8,105 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-
+using GoogleTranslateFreeApi;
 namespace NicoNicoTranslator
 {
     class Program
     {
         static void Main(string[] args)
         {
-            NicoNicoServer NNC = new NicoNicoServer(80, 20, "HELLO!");
+            NicoNicoServer NNC = new NicoNicoServer(80, 20);
             NNC.RunServer();
         }
     }
     class NicoNicoServer
     {
-
+        bool isBing = false;
+        GoogleTranslator googleTranslator;
+        Language from;
+        Language to;
         private int portNum;
         private int listenNum;
-        private String jsonSource;
-        private bool isBing = false;
+        private int translator;
         CookieContainer cc = new CookieContainer();
-        public NicoNicoServer(int PortNum, int ListenNum, String JSONSource)
+        public enum Translators
         {
+            Bing = 1,
+            Google,
+            None,
+            User
+        }
+        public NicoNicoServer(int PortNum, int ListenNum, int Translator = (int)Translators.User) //0 : Bing, 1 : Google, 2 : 사용하지 않음 3 : 사용자 선택,  
+        {
+            translator = Translator;
             portNum = PortNum;
             listenNum = ListenNum;
-            jsonSource = JSONSource;
-            //Bing 번역 쿠키 가져오기
-            WriteConsole("Bing 번역 쿠키를 가져오는 중입니다...", ConsoleColor.Cyan);
-            try
+            while (true)
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/translator");
-                request.Method = "GET";
-                request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-                request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
-                request.ContentType = ("text/html; charset=utf-8");
-                request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
-                request.CookieContainer = cc;
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                response.Close();
-
-                request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/secure/Passport.aspx?popup=1&ssl=1");
-                request.Method = "GET";
-                request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-                request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
-                request.ContentType = ("text/html; charset=utf-8");
-                request.CookieContainer = cc;
-                request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
-                response = (HttpWebResponse)request.GetResponse();
-                Stream stream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-                stream.Close();
-                response.Close();
-                isBing = true;
-                WriteConsole("Bing 쿠키 저장 완료!", ConsoleColor.Green);
+                if (translator == (int)Translators.User)
+                {
+                    WriteConsole("사용할 번역 서비스를 선택해주세요.", ConsoleColor.Cyan);
+                    WriteConsole("1. Bing 번역");
+                    WriteConsole("2. Google 번역");
+                    WriteConsole("3. 사용하지 않음");
+                    translator = int.Parse(Console.ReadLine());
+                }
+                if (translator == (int)Translators.Bing || translator == (int)Translators.Google || translator == (int)Translators.None)
+                {
+                    break;
+                }
             }
-            catch (Exception ex)
+            if (translator == (int)Translators.Bing)
             {
-                WriteConsole("Bing 쿠키를 받아올 수 없습니다. 인터넷 연결을 확인해주십시오.", ConsoleColor.Red);
-                WriteConsole("서버는 정상적으로 동작하나 코멘트를 번역하지 않습니다.", ConsoleColor.Red);
-                WriteConsole("오류 : " + ex.ToString(), ConsoleColor.Red);
+                //Bing 번역 쿠키 가져오기
+                WriteConsole("Bing 번역 쿠키를 가져오는 중입니다...", ConsoleColor.Cyan);
+                try
+                {
+                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/translator");
+                    request.Method = "GET";
+                    request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+                    request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
+                    request.ContentType = ("text/html; charset=utf-8");
+                    request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
+                    request.CookieContainer = cc;
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
 
+                    response.Close();
+
+                    request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/secure/Passport.aspx?popup=1&ssl=1");
+                    request.Method = "GET";
+                    request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+                    request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
+                    request.ContentType = ("text/html; charset=utf-8");
+                    request.CookieContainer = cc;
+                    request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
+                    response = (HttpWebResponse)request.GetResponse();
+                    Stream stream = response.GetResponseStream();
+                    StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                    stream.Close();
+                    response.Close();
+                    WriteConsole("Bing 쿠키 저장 완료!", ConsoleColor.Green);
+                    isBing = true;
+                }
+                catch (Exception ex)
+                {
+                    WriteConsole("Bing 쿠키를 받아올 수 없습니다. 인터넷 연결을 확인해주십시오.", ConsoleColor.Red);
+                    WriteConsole("서버는 정상적으로 동작하나 코멘트를 번역하지 않습니다.", ConsoleColor.Red);
+                    WriteConsole("오류 : " + ex.ToString(), ConsoleColor.Red);
+                    translator = (int)Translators.None;
+                }
+            }
+            if (translator == (int)Translators.Google)
+            {
+                googleTranslator = new GoogleTranslator();
+                from = GoogleTranslator.GetLanguageByName("Japanese");
+                to = GoogleTranslator.GetLanguageByName("Korean");
             }
 
         }
         public void RunServer()
         {
             WriteConsole("서버가 127.0.0.1:80에서 작동되고 있습니다...", ConsoleColor.Cyan);
-            //스레드 처리해야 하는뎅 귀찮당ㅋㅋㅋㅋ 여기서 끄읕!이 아니라 처리!
             IPEndPoint ipep = new IPEndPoint(IPAddress.Any, portNum);
             Socket server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Bind(ipep);
@@ -93,6 +125,7 @@ namespace NicoNicoTranslator
                     {
                         WriteConsole("클라이언트와의 연결에서 오류가 발생했습니다. 자세한 오류는 아래를 참고해주시기 바랍니다.", ConsoleColor.Red);
                         WriteConsole(ex.ToString(), ConsoleColor.Red);
+                        client.Close();
                     }
 
                 }
@@ -110,99 +143,100 @@ namespace NicoNicoTranslator
             }
             if (originalResponse.Contains("api.json/")) // 일반적인 경우
             {
-                var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
-                foreach (string header in GetHeaders(originalResponse))
+                if (translator == (int)Translators.None)
                 {
-                    if (header.Contains("Host"))
-                    {
-                        http.Host = GetHeaderValue(header);
-                    }
-                    else if (header.Contains("User-Agent"))
-                    {
-                        http.UserAgent = GetHeaderValue(header);
-                    }
-                    else if (header.Contains("Content-Type"))
-                    {
-                        http.UserAgent = GetHeaderValue(header);
-                    }
-                    else if (header.Contains("Accept"))
-                    {
-                        http.Accept = GetHeaderValue(header);
-                    }
-                    else if (header.Contains("Referer"))
-                    {
-                        http.Referer = GetHeaderValue(header);
-                    }
-                    else
-                    {
-                        http.Headers.Add(header);
-                    }
-
+                    SendOriginalServer(client, "api.json/", originalResponse);
                 }
-                http.Method = "POST";
-                string parsedContent = GetPayloads(originalResponse);
-                if (parsedContent != "")
+                else
                 {
-
-                    UTF8Encoding encoding = new UTF8Encoding();
-                    Byte[] bytes = encoding.GetBytes(parsedContent);
-
-                    Stream newStream = http.GetRequestStream();
-                    newStream.Write(bytes, 0, bytes.Length);
-                    newStream.Close();
-
-                    var response = http.GetResponse();
-                    string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
-                    var stream = response.GetResponseStream();
-                    var sr = new StreamReader(stream);
-                    string content = sr.ReadToEnd();
-                    string[] scripts = content.Split(new string[] { "\", \"content\": \"" }, StringSplitOptions.None);
-                    if (!isBing) WriteConsole("Bing번역을 사용할 수 없습니다.", ConsoleColor.Red);
-                    for (int i = 1; i < scripts.Length; i++)
+                    var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
+                    foreach (string header in GetHeaders(originalResponse))
                     {
-                        string oriScript = scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
-
-                        if (isHangulHanjaJapaness(oriScript))
+                        if (header.Contains("Host"))
                         {
-                            //string transScript = NaverTrans(scripts[i], "ja", "ko");
-                            //transScript = transScript.Split(new string[] { "{\"translatedText\":\"" }, StringSplitOptions.None)[1].Split('\"')[0];
-                            //string transScript = oriScript;//string transScript = BingTranslate("ja", "ko", oriScript);
-                            if (isBing)
-                            {
-                                string transScript = BingTranslate("ja", "ko", oriScript);
-
-                                WriteConsole(scripts.Length - 1 + "/" + i + " : " + oriScript + "->" + transScript, ConsoleColor.DarkGray);
-                                content = content.Replace(oriScript, transScript);
-                                Thread.Sleep(50);
-                            }
+                            http.Host = GetHeaderValue(header);
+                        }
+                        else if (header.Contains("User-Agent"))
+                        {
+                            http.UserAgent = GetHeaderValue(header);
+                        }
+                        else if (header.Contains("Content-Type"))
+                        {
+                            http.UserAgent = GetHeaderValue(header);
+                        }
+                        else if (header.Contains("Accept"))
+                        {
+                            http.Accept = GetHeaderValue(header);
+                        }
+                        else if (header.Contains("Referer"))
+                        {
+                            http.Referer = GetHeaderValue(header);
+                        }
+                        else
+                        {
+                            http.Headers.Add(header);
                         }
 
                     }
-                    response.Close();
-                    client.Send(GetSendByte(client, content,responseOriginal)); //클라이언트에 HTML 등 전송
+                    http.Method = "POST";
+                    string parsedContent = GetPayloads(originalResponse);
+                    if (parsedContent != "")
+                    {
+
+                        UTF8Encoding encoding = new UTF8Encoding();
+                        Byte[] bytes = encoding.GetBytes(parsedContent);
+
+                        Stream newStream = http.GetRequestStream();
+                        newStream.Write(bytes, 0, bytes.Length);
+                        newStream.Close();
+
+                        var response = http.GetResponse();
+                        string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
+                        var stream = response.GetResponseStream();
+                        var sr = new StreamReader(stream);
+                        string content = sr.ReadToEnd();
+                        string[] scripts = content.Split(new string[] { "\", \"content\": \"" }, StringSplitOptions.None);
+                        if (!isBing) WriteConsole("Bing번역을 사용할 수 없습니다.", ConsoleColor.Red);
+                        for (int i = 1; i < scripts.Length; i++)
+                        {
+                            string oriScript = scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
+
+                            if (isHangulHanjaJapaness(oriScript))
+                            {
+                                //string transScript = NaverTrans(scripts[i], "ja", "ko");
+                                //transScript = transScript.Split(new string[] { "{\"translatedText\":\"" }, StringSplitOptions.None)[1].Split('\"')[0];
+                                //string transScript = oriScript;//string transScript = BingTranslate("ja", "ko", oriScript);
+                                if (isBing)
+                                {
+                                    string transScript = BingTranslate("ja", "ko", oriScript);
+
+                                    WriteConsole(scripts.Length - 1 + "/" + i + " : " + oriScript + "->" + transScript, ConsoleColor.DarkGray);
+                                    content = content.Replace(oriScript, transScript);
+                                    Thread.Sleep(50);
+                                }
+                            }
+
+                        }
+                        response.Close();
+                        client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
+                    }
                 }
 
 
 
 
 
-            }
-            else if(originalResponse.Contains("crossdomain.xml"))
-            {
-                SendOriginalServer(client, "crossdomain.xml", originalResponse);
+
             }
             else
             {
-                SendOriginalServer(client, "crossdomain.xml", originalResponse);
+                SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
                 /*UTF8Encoding encoding = new UTF8Encoding();
                 Byte[] bytes = encoding.GetBytes(parsedContent);
-
                 Stream newStream = http.GetRequestStream();
                 newStream.Write(bytes, 0, bytes.Length);
                 newStream.Close();
-
                 var response = http.GetResponse();
-
                 var stream = response.GetResponseStream();
                 var sr = new StreamReader(stream);
                 string content = sr.ReadToEnd();
@@ -210,7 +244,7 @@ namespace NicoNicoTranslator
                 //string content = "404 Not Found! ServiceBy . 009342@naver.com";
                 //client.Send(GetSendByte(client, content, originalResponse)); //클라이언트에 HTML 등 전송
             }
-            
+
 
             WriteConsole("접속해제 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
             client.Close();
@@ -218,12 +252,10 @@ namespace NicoNicoTranslator
         public void SendOriginalServer(Socket client, string subdomain, string originalResponse)
         {
             var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/"+subdomain));
-            List<String> Headers = GetHeaders(originalResponse);
-            foreach (string header in Headers)
+            foreach (string header in GetHeaders(originalResponse))
             {
                 if (header.Contains("Host"))
                 {
-                    //http.Host = "skdjfklsjqjweljrqlkqwejlr.com";
                     http.Host = GetHeaderValue(header);
                 }
                 else if (header.Contains("User-Agent"))
@@ -232,9 +264,9 @@ namespace NicoNicoTranslator
                 }
                 else if (header.Contains("Content-Type"))
                 {
-                    http.ContentType = GetHeaderValue(header); //이게 Content-Type이 아니라 UserAgent가 들어가서 그런듯
+                    http.UserAgent = GetHeaderValue(header);
                 }
-                else if (header.Contains("Accept:"))
+                else if (header.Contains("Accept"))
                 {
                     http.Accept = GetHeaderValue(header);
                 }
@@ -242,21 +274,31 @@ namespace NicoNicoTranslator
                 {
                     http.Referer = GetHeaderValue(header);
                 }
-
                 else
                 {
                     http.Headers.Add(header);
                 }
 
             }
-            http.Method = "GET";
+            http.Method = originalResponse.Contains("POST") ? "POST" : "GET";
+            string parsedContent = GetPayloads(originalResponse);
+            if (parsedContent != "")
+            {
 
+                UTF8Encoding encoding = new UTF8Encoding();
+                Byte[] bytes = encoding.GetBytes(parsedContent);
+
+                Stream newStream = http.GetRequestStream();
+                newStream.Write(bytes, 0, bytes.Length);
+                newStream.Close();
+            }
             var response = http.GetResponse();
-            string OriginalServerResponse = Encoding.UTF8.GetString(response.Headers.ToByteArray());
+            string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
             var stream = response.GetResponseStream();
             var sr = new StreamReader(stream);
             string content = sr.ReadToEnd();
-            client.Send(GetSendByte(client, content, OriginalServerResponse));
+            response.Close();
+            client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
         }
         public static bool isHangulHanjaJapaness(String str)
         {
@@ -297,7 +339,7 @@ namespace NicoNicoTranslator
             List<string> headers = new List<string>();
             foreach (string header in buf)
             {
-                if (header.Contains(":") && !header.Contains("Content-Length") && !header.Contains("Connection"))
+                if (header.Contains(":") && !header.Contains("Connection") && !header.Contains("Content-Length"))
                 {
                     headers.Add(header);
 
@@ -362,7 +404,7 @@ namespace NicoNicoTranslator
                 }
                 _buf += "ServiceBy: 009342@naver.com\r\n";
                 _buf += "\r\n";
-                client.Send(Encoding.Default.GetBytes(_buf));
+                client.Send(Encoding.UTF8.GetBytes(_buf));
             }
             catch
             {
@@ -370,8 +412,8 @@ namespace NicoNicoTranslator
                 _buf += "ServiceBy: 009342@naver.com\r\n";
                 _buf += "content-type:text/html\r\n";
                 _buf += "\r\n";
-                client.Send(Encoding.Default.GetBytes(_buf));
-                _data2 = Encoding.Default.GetBytes("Bed Request");
+                client.Send(Encoding.UTF8.GetBytes(_buf));
+                _data2 = Encoding.UTF8.GetBytes("Bed Request");
             }
             return _data2;
         }

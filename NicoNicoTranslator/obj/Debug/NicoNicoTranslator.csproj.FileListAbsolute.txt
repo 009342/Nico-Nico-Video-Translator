@@ -1,0 +1,11 @@
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\NicoNicoTranslator.exe.config
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\NicoNicoTranslator.exe
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\NicoNicoTranslator.pdb
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\GoogleTranslateFreeApi.dll
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\GoogleTranslateFreeApi.pdb
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\GoogleTranslateFreeApi.xml
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\obj\Debug\NicoNicoTranslator.csprojResolveAssemblyReference.cache
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\obj\Debug\NicoNicoTranslator.exe
+C:\Users\Sunho\Source\Repos\Nico-Nico-Video-Translator\NicoNicoTranslator\obj\Debug\NicoNicoTranslator.pdb
