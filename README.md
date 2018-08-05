@@ -119,6 +119,10 @@ https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
 
+#### 2018-08-06 #2
+
+함수가 async로 변경되면서 try~ catch문이 빠진 문제를 수정하였습니다.
+
 #### 2018-08-06 
 
 Google 번역 라이브러리를 추가하여 Google 번역을 사용하여 이용할 수 있도록 수정하였습니다.
