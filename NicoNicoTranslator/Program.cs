@@ -23,7 +23,6 @@ namespace NicoNicoTranslator
     }
     class NicoNicoServer
     {
-        bool isBing = false;
         GoogleTranslator googleTranslator;
         Language from;
         Language to;
@@ -33,12 +32,11 @@ namespace NicoNicoTranslator
         CookieContainer cc = new CookieContainer();
         public enum Translators
         {
-            Bing = 1,
-            Google,
+            Google =1,
             None,
             User
         }
-        public NicoNicoServer(int PortNum, int ListenNum, int Translator = (int)Translators.User) //0 : Bing, 1 : Google, 2 : 사용하지 않음 3 : 사용자 선택,  
+        public NicoNicoServer(int PortNum, int ListenNum, int Translator = (int)Translators.User)
         {
             translator = Translator;
             portNum = PortNum;
@@ -48,54 +46,13 @@ namespace NicoNicoTranslator
                 if (translator == (int)Translators.User)
                 {
                     WriteConsole("사용할 번역 서비스를 선택해주세요.", ConsoleColor.Cyan);
-                    WriteConsole("1. Bing 번역");
-                    WriteConsole("2. Google 번역");
-                    WriteConsole("3. 사용하지 않음");
+                    WriteConsole("1. Google 번역");
+                    WriteConsole("2. 사용하지 않음");
                     translator = int.Parse(Console.ReadLine());
                 }
-                if (translator == (int)Translators.Bing || translator == (int)Translators.Google || translator == (int)Translators.None)
+                if (translator == (int)Translators.Google || translator == (int)Translators.None)
                 {
                     break;
-                }
-            }
-            if (translator == (int)Translators.Bing)
-            {
-                //Bing 번역 쿠키 가져오기
-                WriteConsole("Bing 번역 쿠키를 가져오는 중입니다...", ConsoleColor.Cyan);
-                try
-                {
-                    HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/translator");
-                    request.Method = "GET";
-                    request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-                    request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
-                    request.ContentType = ("text/html; charset=utf-8");
-                    request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
-                    request.CookieContainer = cc;
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-                    response.Close();
-
-                    request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/secure/Passport.aspx?popup=1&ssl=1");
-                    request.Method = "GET";
-                    request.Accept = ("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-                    request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
-                    request.ContentType = ("text/html; charset=utf-8");
-                    request.CookieContainer = cc;
-                    request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
-                    response = (HttpWebResponse)request.GetResponse();
-                    Stream stream = response.GetResponseStream();
-                    StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-                    stream.Close();
-                    response.Close();
-                    WriteConsole("Bing 쿠키 저장 완료!", ConsoleColor.Green);
-                    isBing = true;
-                }
-                catch (Exception ex)
-                {
-                    WriteConsole("Bing 쿠키를 받아올 수 없습니다. 인터넷 연결을 확인해주십시오.", ConsoleColor.Red);
-                    WriteConsole("서버는 정상적으로 동작하나 코멘트를 번역하지 않습니다.", ConsoleColor.Red);
-                    WriteConsole("오류 : " + ex.ToString(), ConsoleColor.Red);
-                    translator = (int)Translators.None;
                 }
             }
             if (translator == (int)Translators.Google)
@@ -202,23 +159,6 @@ namespace NicoNicoTranslator
                             var sr = new StreamReader(stream);
                             string content = sr.ReadToEnd();
                             response.Close();
-#if false
-                        string[] scripts = content.Split(new string[] { "\", \"content\": \"" }, StringSplitOptions.None);
-                        if (!isBing) WriteConsole("Bing번역을 사용할 수 없습니다.", ConsoleColor.Red);
-                        List<string> ScriptList = new List<string>();
-                        for (int i = 1; i < scripts.Length; i++)
-                        {
-                            string oriScript = scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
-                            ScriptList.Add(oriScript);
-                        }
-                        ScriptList = BingTranslate("ja", "ko", ScriptList);
-                        string json = "";
-                        for(int i=0;i<ScriptList.Count;i++)
-                        {
-                            json += scripts[i - 1] + "\", \"content\": \"" + ScriptList[i]+ "\"" + scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[1] ;
-                        
-                        }
-#endif
                             JArray jArray = JArray.Parse(content);
                             List<JToken> jTokens = new List<JToken>();
                             List<string> splited = new List<string>();
@@ -481,49 +421,6 @@ namespace NicoNicoTranslator
                 _data2 = Encoding.UTF8.GetBytes("Bed Request");
             }
             return _data2;
-        }
-        public List<string> BingTranslate(string from, string to, List<string> script)
-        {
-            //100개 세트로
-            string query = "";
-            List<string> TranslateList = new List<string>();
-            for (int i = 0; i < script.Count; i++)
-            {
-                query += script[i] + "\r\n";
-                if (i % 100 == 0 && i != 0)
-                {
-                    query = BingTranslate(from, to, query);
-                    string[] translate = query.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    TranslateList.AddRange(translate.ToList());
-                    query = "";
-                }
-            }
-            if (query != "")
-            {
-                query = BingTranslate(from, to, query);
-                string[] translate = query.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                TranslateList.AddRange(translate.ToList());
-            }
-            return TranslateList;
-        }
-        public string BingTranslate(string from, string to, string query)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create("https://www.bing.com/translator/api/Translate/TranslateArray?from=" + from + "&to=" + to);
-            request.Method = "POST";
-            request.Accept = ("application/json, text/javascript, */*; q=0.01");
-            request.Headers.Add("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
-            request.ContentType = ("application/json; charset=UTF-8");
-            request.CookieContainer = cc;
-            request.UserAgent = ("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36");
-            byte[] param_byte = Encoding.UTF8.GetBytes("[{\"id\":2137,\"text\":\"" + query + "\"}]");
-            Stream stream = request.GetRequestStream();
-            stream.Write(param_byte, 0, param_byte.Length);
-            stream.Close();
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            string restr = new StreamReader(response.GetResponseStream(), Encoding.UTF8).ReadToEnd();
-            response.Close();
-            return restr.Split(new string[] { "\"text\":\"" }, StringSplitOptions.None)[1].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
-
         }
         public void WriteConsole(string str, ConsoleColor Fore = ConsoleColor.Gray, ConsoleColor Back = ConsoleColor.Black)
         {
