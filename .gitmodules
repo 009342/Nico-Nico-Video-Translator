@@ -1,3 +1,4 @@
 [submodule "googleTranslate"]
 	path = googleTranslate
 	url = https://github.com/Grizley56/GoogleTranslateFreeApi.git
+	ignore = dirty
