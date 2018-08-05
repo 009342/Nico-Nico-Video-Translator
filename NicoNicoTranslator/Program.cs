@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using GoogleTranslateFreeApi;
+using Newtonsoft.Json.Linq;
+
 namespace NicoNicoTranslator
 {
     class Program
@@ -101,6 +103,7 @@ namespace NicoNicoTranslator
                 googleTranslator = new GoogleTranslator();
                 from = GoogleTranslator.GetLanguageByName("Japanese");
                 to = GoogleTranslator.GetLanguageByName("Korean");
+
             }
 
         }
@@ -117,9 +120,10 @@ namespace NicoNicoTranslator
                 WriteConsole("접속 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
                 Thread t = new Thread(() =>
                 {
+                    RunServerThreadAsync(client);
                     try
                     {
-                        RunServerThread(client);
+
                     }
                     catch (Exception ex)
                     {
@@ -134,124 +138,185 @@ namespace NicoNicoTranslator
             }
 
         }
-        public void RunServerThread(Socket client)
+        public async void RunServerThreadAsync(Socket client)
         {
             String originalResponse = Recieve(client); //헤더 가져오기
-            foreach (String headers in GetHeaders(originalResponse))
+            if (originalResponse != "")
             {
-                WriteConsole(headers, ConsoleColor.DarkGray);
-            }
-            if (originalResponse.Contains("api.json/")) // 일반적인 경우
-            {
-                if (translator == (int)Translators.None)
+                foreach (String headers in GetHeaders(originalResponse))
                 {
-                    SendOriginalServer(client, "api.json/", originalResponse);
+                    WriteConsole(headers, ConsoleColor.DarkGray);
                 }
-                else
+                if (originalResponse.Contains("api.json/")) // 일반적인 경우
                 {
-                    var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
-                    foreach (string header in GetHeaders(originalResponse))
+                    if (translator == (int)Translators.None)
                     {
-                        if (header.Contains("Host"))
-                        {
-                            http.Host = GetHeaderValue(header);
-                        }
-                        else if (header.Contains("User-Agent"))
-                        {
-                            http.UserAgent = GetHeaderValue(header);
-                        }
-                        else if (header.Contains("Content-Type"))
-                        {
-                            http.UserAgent = GetHeaderValue(header);
-                        }
-                        else if (header.Contains("Accept"))
-                        {
-                            http.Accept = GetHeaderValue(header);
-                        }
-                        else if (header.Contains("Referer"))
-                        {
-                            http.Referer = GetHeaderValue(header);
-                        }
-                        else
-                        {
-                            http.Headers.Add(header);
-                        }
-
+                        SendOriginalServer(client, "api.json/", originalResponse);
                     }
-                    http.Method = "POST";
-                    string parsedContent = GetPayloads(originalResponse);
-                    if (parsedContent != "")
+                    else
                     {
-
-                        UTF8Encoding encoding = new UTF8Encoding();
-                        Byte[] bytes = encoding.GetBytes(parsedContent);
-
-                        Stream newStream = http.GetRequestStream();
-                        newStream.Write(bytes, 0, bytes.Length);
-                        newStream.Close();
-
-                        var response = http.GetResponse();
-                        string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
-                        var stream = response.GetResponseStream();
-                        var sr = new StreamReader(stream);
-                        string content = sr.ReadToEnd();
-                        string[] scripts = content.Split(new string[] { "\", \"content\": \"" }, StringSplitOptions.None);
-                        if (!isBing) WriteConsole("Bing번역을 사용할 수 없습니다.", ConsoleColor.Red);
-                        for (int i = 1; i < scripts.Length; i++)
+                        var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
+                        foreach (string header in GetHeaders(originalResponse))
                         {
-                            string oriScript = scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
-
-                            if (isHangulHanjaJapaness(oriScript))
+                            if (header.Contains("Host"))
                             {
-                                //string transScript = NaverTrans(scripts[i], "ja", "ko");
-                                //transScript = transScript.Split(new string[] { "{\"translatedText\":\"" }, StringSplitOptions.None)[1].Split('\"')[0];
-                                //string transScript = oriScript;//string transScript = BingTranslate("ja", "ko", oriScript);
-                                if (isBing)
-                                {
-                                    string transScript = BingTranslate("ja", "ko", oriScript);
-
-                                    WriteConsole(scripts.Length - 1 + "/" + i + " : " + oriScript + "->" + transScript, ConsoleColor.DarkGray);
-                                    content = content.Replace(oriScript, transScript);
-                                    Thread.Sleep(50);
-                                }
+                                http.Host = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("User-Agent"))
+                            {
+                                http.UserAgent = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Content-Type"))
+                            {
+                                http.UserAgent = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Accept"))
+                            {
+                                http.Accept = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Referer"))
+                            {
+                                http.Referer = GetHeaderValue(header);
+                            }
+                            else
+                            {
+                                http.Headers.Add(header);
                             }
 
                         }
-                        response.Close();
-                        client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
+                        http.Method = "POST";
+                        string parsedContent = GetPayloads(originalResponse);
+                        if (parsedContent != "")
+                        {
+
+                            UTF8Encoding encoding = new UTF8Encoding();
+                            Byte[] bytes = encoding.GetBytes(parsedContent);
+
+                            Stream newStream = http.GetRequestStream();
+                            newStream.Write(bytes, 0, bytes.Length);
+                            newStream.Close();
+
+                            var response = http.GetResponse();
+                            string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
+                            var stream = response.GetResponseStream();
+                            var sr = new StreamReader(stream);
+                            string content = sr.ReadToEnd();
+                            response.Close();
+#if false
+                        string[] scripts = content.Split(new string[] { "\", \"content\": \"" }, StringSplitOptions.None);
+                        if (!isBing) WriteConsole("Bing번역을 사용할 수 없습니다.", ConsoleColor.Red);
+                        List<string> ScriptList = new List<string>();
+                        for (int i = 1; i < scripts.Length; i++)
+                        {
+                            string oriScript = scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[0];
+                            ScriptList.Add(oriScript);
+                        }
+                        ScriptList = BingTranslate("ja", "ko", ScriptList);
+                        string json = "";
+                        for(int i=0;i<ScriptList.Count;i++)
+                        {
+                            json += scripts[i - 1] + "\", \"content\": \"" + ScriptList[i]+ "\"" + scripts[i].Split(new string[] { "\"" }, StringSplitOptions.None)[1] ;
+                        
+                        }
+#endif
+                            JArray jArray = JArray.Parse(content);
+                            List<JToken> jTokens = new List<JToken>();
+                            List<string> splited = new List<string>();
+                            List<string> translated = new List<string>();
+                            var jTokensList = new List<List<JToken>>();
+                            int c = 0;
+                            int d = 0;
+                            int cb = 0;
+                            foreach (var item in jArray)
+                            {
+                                if (item["chat"] != null && item["chat"]["content"] != null)
+                                {
+                                    jTokens.Add(item["chat"]["content"]);
+                                }
+                            }
+                            while (true)
+                            {
+                                d = 0;
+                                cb = c;
+                                for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
+                                {
+                                    i += (jTokens[c] + Environment.NewLine).Length;
+                                }
+                                if (c == jTokens.Count)
+                                {
+                                    jTokensList.Add(jTokens.GetRange(cb, d));
+                                    break;
+                                }
+                                else
+                                {
+                                    jTokensList.Add(jTokens.GetRange(cb, d - 1));
+                                    c--;
+                                }
+
+
+                            }
+                            foreach (List<JToken> list in jTokensList)
+                            {
+                                string s = "";
+                                foreach (JToken item in list)
+                                {
+                                    s += (item + Environment.NewLine);
+                                }
+                                splited.Add(s);
+                            }
+                            for (int i = 0; i < splited.Count; i++)
+                            {
+                                Thread.Sleep(5000);
+                                TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
+                                string[] lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                                for (int j = 0; j < lines.Length; j++)
+                                {
+                                    translated.Add(lines[j]);
+                                }
+                                Console.WriteLine("{0} / {1} 완료", translated.Count, jTokens.Count);
+                            }
+                            c = 0;//재활용
+                            foreach (JToken item in jArray)
+                            {
+                                if (item["chat"] != null && item["chat"]["content"] != null)
+                                {
+                                    item["chat"]["content"] = translated[c++];
+                                }
+                            }
+                            client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
+                        }
                     }
+
+
+
+
+
+
                 }
-
-
-
-
-
-
+                else
+                {
+                    SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
+                    /*UTF8Encoding encoding = new UTF8Encoding();
+                    Byte[] bytes = encoding.GetBytes(parsedContent);
+                    Stream newStream = http.GetRequestStream();
+                    newStream.Write(bytes, 0, bytes.Length);
+                    newStream.Close();
+                    var response = http.GetResponse();
+                    var stream = response.GetResponseStream();
+                    var sr = new StreamReader(stream);
+                    string content = sr.ReadToEnd();
+                    response.Close();*/
+                    //string content = "404 Not Found! ServiceBy . 009342@naver.com";
+                    //client.Send(GetSendByte(client, content, originalResponse)); //클라이언트에 HTML 등 전송
+                }
             }
-            else
-            {
-                SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
-                /*UTF8Encoding encoding = new UTF8Encoding();
-                Byte[] bytes = encoding.GetBytes(parsedContent);
-                Stream newStream = http.GetRequestStream();
-                newStream.Write(bytes, 0, bytes.Length);
-                newStream.Close();
-                var response = http.GetResponse();
-                var stream = response.GetResponseStream();
-                var sr = new StreamReader(stream);
-                string content = sr.ReadToEnd();
-                response.Close();*/
-                //string content = "404 Not Found! ServiceBy . 009342@naver.com";
-                //client.Send(GetSendByte(client, content, originalResponse)); //클라이언트에 HTML 등 전송
-            }
-
 
             WriteConsole("접속해제 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
             client.Close();
         }
-        public void SendOriginalServer(Socket client, string subdomain, string originalResponse)
+        public void SendOriginalServer(Socket client, string others, string originalResponse)
         {
-            var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/"+subdomain));
+            var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/" + others));
             foreach (string header in GetHeaders(originalResponse))
             {
                 if (header.Contains("Host"))
@@ -416,6 +481,30 @@ namespace NicoNicoTranslator
                 _data2 = Encoding.UTF8.GetBytes("Bed Request");
             }
             return _data2;
+        }
+        public List<string> BingTranslate(string from, string to, List<string> script)
+        {
+            //100개 세트로
+            string query = "";
+            List<string> TranslateList = new List<string>();
+            for (int i = 0; i < script.Count; i++)
+            {
+                query += script[i] + "\r\n";
+                if (i % 100 == 0 && i != 0)
+                {
+                    query = BingTranslate(from, to, query);
+                    string[] translate = query.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                    TranslateList.AddRange(translate.ToList());
+                    query = "";
+                }
+            }
+            if (query != "")
+            {
+                query = BingTranslate(from, to, query);
+                string[] translate = query.Split(new string[] { "\r\n" }, StringSplitOptions.None);
+                TranslateList.AddRange(translate.ToList());
+            }
+            return TranslateList;
         }
         public string BingTranslate(string from, string to, string query)
         {
