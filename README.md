@@ -10,7 +10,7 @@ http://sshbrain.tistory.com/48
 
 2. 파일->열기를 눌러 파일이름 항목에 C:\Windows\System32\drivers\etc\hosts 를 적고 열기를 눌러주세요. 
 
-3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp** 를 추가해주세요. 추가하면 다음과 같이 되야 합니다.
+3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp** 를 추가해주세요. 추가하면 다음과 같이 되어야 합니다.
 <pre><code># Copyright (c) 1993-2009 Microsoft Corp.
 #
 # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
@@ -119,14 +119,15 @@ https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
 
-#### 2018-03-31
-
-**마이크로소프트 측에서 편법으로 Bing 번역을 사용하는 알고리즘을 막았습니다.**
-
-**더 이상 사용이 불가능합니다.**
-
 #### 2018-08-06 
 
 Google 번역 라이브러리를 추가하여 Google 번역을 사용하여 이용할 수 있도록 수정하였습니다.
 
 과도한 트래픽이 발생하면 IP밴을 먹을 가능성이 있으니, 사용시 주의해 주시기 바랍니다.
+
+#### 2018-03-31
+
+~~마이크로소프트 측에서 편법으로 Bing 번역을 사용하는 알고리즘을 막았습니다.~~
+
+~~더 이상 사용이 불가능합니다.~~
+
