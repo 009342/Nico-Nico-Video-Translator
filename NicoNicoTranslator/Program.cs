@@ -32,7 +32,7 @@ namespace NicoNicoTranslator
         CookieContainer cc = new CookieContainer();
         public enum Translators
         {
-            Google =1,
+            Google = 1,
             None,
             User
         }
@@ -77,18 +77,8 @@ namespace NicoNicoTranslator
                 WriteConsole("접속 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
                 Thread t = new Thread(() =>
                 {
+
                     RunServerThreadAsync(client);
-                    try
-                    {
-
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteConsole("클라이언트와의 연결에서 오류가 발생했습니다. 자세한 오류는 아래를 참고해주시기 바랍니다.", ConsoleColor.Red);
-                        WriteConsole(ex.ToString(), ConsoleColor.Red);
-                        client.Close();
-                    }
-
                 }
                 );
                 t.Start();
@@ -97,162 +87,159 @@ namespace NicoNicoTranslator
         }
         public async void RunServerThreadAsync(Socket client)
         {
-            String originalResponse = Recieve(client); //헤더 가져오기
-            if (originalResponse != "")
+            try
             {
-                foreach (String headers in GetHeaders(originalResponse))
+                String originalResponse = Recieve(client); //헤더 가져오기
+                if (originalResponse != "")
                 {
-                    WriteConsole(headers, ConsoleColor.DarkGray);
-                }
-                if (originalResponse.Contains("api.json/")) // 일반적인 경우
-                {
-                    if (translator == (int)Translators.None)
+                    foreach (String headers in GetHeaders(originalResponse))
                     {
-                        SendOriginalServer(client, "api.json/", originalResponse);
+                        WriteConsole(headers, ConsoleColor.DarkGray);
                     }
-                    else
+                    if (originalResponse.Contains("api.json/")) // 일반적인 경우
                     {
-                        var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
-                        foreach (string header in GetHeaders(originalResponse))
+                        if (translator == (int)Translators.None)
                         {
-                            if (header.Contains("Host"))
-                            {
-                                http.Host = GetHeaderValue(header);
-                            }
-                            else if (header.Contains("User-Agent"))
-                            {
-                                http.UserAgent = GetHeaderValue(header);
-                            }
-                            else if (header.Contains("Content-Type"))
-                            {
-                                http.UserAgent = GetHeaderValue(header);
-                            }
-                            else if (header.Contains("Accept"))
-                            {
-                                http.Accept = GetHeaderValue(header);
-                            }
-                            else if (header.Contains("Referer"))
-                            {
-                                http.Referer = GetHeaderValue(header);
-                            }
-                            else
-                            {
-                                http.Headers.Add(header);
-                            }
-
+                            SendOriginalServer(client, "api.json/", originalResponse);
                         }
-                        http.Method = "POST";
-                        string parsedContent = GetPayloads(originalResponse);
-                        if (parsedContent != "")
+                        else
                         {
-
-                            UTF8Encoding encoding = new UTF8Encoding();
-                            Byte[] bytes = encoding.GetBytes(parsedContent);
-
-                            Stream newStream = http.GetRequestStream();
-                            newStream.Write(bytes, 0, bytes.Length);
-                            newStream.Close();
-
-                            var response = http.GetResponse();
-                            string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
-                            var stream = response.GetResponseStream();
-                            var sr = new StreamReader(stream);
-                            string content = sr.ReadToEnd();
-                            response.Close();
-                            JArray jArray = JArray.Parse(content);
-                            List<JToken> jTokens = new List<JToken>();
-                            List<string> splited = new List<string>();
-                            List<string> translated = new List<string>();
-                            var jTokensList = new List<List<JToken>>();
-                            int c = 0;
-                            int d = 0;
-                            int cb = 0;
-                            foreach (var item in jArray)
+                            var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
+                            foreach (string header in GetHeaders(originalResponse))
                             {
-                                if (item["chat"] != null && item["chat"]["content"] != null)
+                                if (header.Contains("Host"))
                                 {
-                                    jTokens.Add(item["chat"]["content"]);
+                                    http.Host = GetHeaderValue(header);
                                 }
-                            }
-                            while (true)
-                            {
-                                d = 0;
-                                cb = c;
-                                for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
+                                else if (header.Contains("User-Agent"))
                                 {
-                                    i += (jTokens[c] + Environment.NewLine).Length;
+                                    http.UserAgent = GetHeaderValue(header);
                                 }
-                                if (c == jTokens.Count)
+                                else if (header.Contains("Content-Type"))
                                 {
-                                    jTokensList.Add(jTokens.GetRange(cb, d));
-                                    break;
+                                    http.UserAgent = GetHeaderValue(header);
+                                }
+                                else if (header.Contains("Accept"))
+                                {
+                                    http.Accept = GetHeaderValue(header);
+                                }
+                                else if (header.Contains("Referer"))
+                                {
+                                    http.Referer = GetHeaderValue(header);
                                 }
                                 else
                                 {
-                                    jTokensList.Add(jTokens.GetRange(cb, d - 1));
-                                    c--;
+                                    http.Headers.Add(header);
                                 }
 
+                            }
+                            http.Method = "POST";
+                            string parsedContent = GetPayloads(originalResponse);
+                            if (parsedContent != "")
+                            {
 
-                            }
-                            foreach (List<JToken> list in jTokensList)
-                            {
-                                string s = "";
-                                foreach (JToken item in list)
+                                UTF8Encoding encoding = new UTF8Encoding();
+                                Byte[] bytes = encoding.GetBytes(parsedContent);
+
+                                Stream newStream = http.GetRequestStream();
+                                newStream.Write(bytes, 0, bytes.Length);
+                                newStream.Close();
+
+                                var response = http.GetResponse();
+                                string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
+                                var stream = response.GetResponseStream();
+                                var sr = new StreamReader(stream);
+                                string content = sr.ReadToEnd();
+                                response.Close();
+                                JArray jArray = JArray.Parse(content);
+                                List<JToken> jTokens = new List<JToken>();
+                                List<string> splited = new List<string>();
+                                List<string> translated = new List<string>();
+                                var jTokensList = new List<List<JToken>>();
+                                int c = 0;
+                                int d = 0;
+                                int cb = 0;
+                                foreach (var item in jArray)
                                 {
-                                    s += (item + Environment.NewLine);
+                                    if (item["chat"] != null && item["chat"]["content"] != null)
+                                    {
+                                        jTokens.Add(item["chat"]["content"]);
+                                    }
                                 }
-                                splited.Add(s);
-                            }
-                            for (int i = 0; i < splited.Count; i++)
-                            {
-                                Thread.Sleep(5000);
-                                TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
-                                string[] lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                                for (int j = 0; j < lines.Length; j++)
+                                while (true)
                                 {
-                                    translated.Add(lines[j]);
+                                    d = 0;
+                                    cb = c;
+                                    for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
+                                    {
+                                        i += (jTokens[c] + Environment.NewLine).Length;
+                                    }
+                                    if (c == jTokens.Count)
+                                    {
+                                        jTokensList.Add(jTokens.GetRange(cb, d));
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        jTokensList.Add(jTokens.GetRange(cb, d - 1));
+                                        c--;
+                                    }
+
+
                                 }
-                                Console.WriteLine("{0} / {1} 완료", translated.Count, jTokens.Count);
-                            }
-                            c = 0;//재활용
-                            foreach (JToken item in jArray)
-                            {
-                                if (item["chat"] != null && item["chat"]["content"] != null)
+                                foreach (List<JToken> list in jTokensList)
                                 {
-                                    item["chat"]["content"] = translated[c++];
+                                    string s = "";
+                                    foreach (JToken item in list)
+                                    {
+                                        s += (item + Environment.NewLine);
+                                    }
+                                    splited.Add(s);
                                 }
+                                for (int i = 0; i < splited.Count; i++)
+                                {
+                                    if(i!=0) Thread.Sleep(5000); 
+                                    TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
+                                    string[] lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                                    for (int j = 0; j < lines.Length; j++)
+                                    {
+                                        translated.Add(lines[j]);
+                                    }
+                                    Console.WriteLine("{0} / {1} 완료", translated.Count, jTokens.Count);
+                                }
+                                c = 0;//재활용
+                                foreach (JToken item in jArray)
+                                {
+                                    if (item["chat"] != null && item["chat"]["content"] != null)
+                                    {
+                                        item["chat"]["content"] = translated[c++];
+                                    }
+                                }
+                                client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
                             }
-                            client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
                         }
+
+
+
+
+
+
                     }
-
-
-
-
-
-
+                    else
+                    {
+                        SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
+                    }
                 }
-                else
-                {
-                    SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
-                    /*UTF8Encoding encoding = new UTF8Encoding();
-                    Byte[] bytes = encoding.GetBytes(parsedContent);
-                    Stream newStream = http.GetRequestStream();
-                    newStream.Write(bytes, 0, bytes.Length);
-                    newStream.Close();
-                    var response = http.GetResponse();
-                    var stream = response.GetResponseStream();
-                    var sr = new StreamReader(stream);
-                    string content = sr.ReadToEnd();
-                    response.Close();*/
-                    //string content = "404 Not Found! ServiceBy . 009342@naver.com";
-                    //client.Send(GetSendByte(client, content, originalResponse)); //클라이언트에 HTML 등 전송
-                }
+
+                WriteConsole("접속해제 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
+                client.Close();
             }
-
-            WriteConsole("접속해제 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
-            client.Close();
+            catch (Exception ex)
+            {
+                WriteConsole("클라이언트와의 연결에서 오류가 발생했습니다. 자세한 오류는 아래를 참고해주시기 바랍니다.", ConsoleColor.Red);
+                WriteConsole(ex.ToString(), ConsoleColor.Red);
+                client.Close();
+            }
         }
         public void SendOriginalServer(Socket client, string others, string originalResponse)
         {
@@ -355,31 +342,9 @@ namespace NicoNicoTranslator
         }
         public String Recieve(Socket client)
         {
-            //String _data_str = "";
             byte[] _data = new byte[4096];
             client.Receive(_data);
-
-            //Console.WriteLine(Encoding.Default.GetString(_data).Trim('\0'));
             return Encoding.Default.GetString(_data).Trim('\0');
-            /*String[] _buf = Encoding.Default.GetString(_data).Split("\r\n".ToCharArray());
-            if (_buf[0].IndexOf("GET") != -1)
-            {
-                _data_str = _buf[0].Replace("GET ", "").Replace("HTTP/1.1", "").Trim();
-            }
-            else
-            {
-                _data_str = _buf[0].Replace("POST ", "").Replace("HTTP/1.1", "").Trim();
-            }
-            if (_data_str.Trim() == "/")
-            {
-                _data_str += "api.json";
-            }
-            int pos = _data_str.IndexOf("?");
-            if (pos > 0)
-            {
-                _data_str = _data_str.Remove(pos);
-            }
-            return _data_str;*/
         }
 
 
@@ -388,19 +353,6 @@ namespace NicoNicoTranslator
             byte[] _data2 = Encoding.UTF8.GetBytes(Content);
             try
             {
-                /*
-                    HTTP/1.1 200 OK
-                    Access-Control-Allow-Origin: *
-                    Access-Control-Allow-Methods: POST,GET,OPTIONS,HEAD
-                    Access-Control-Allow-Headers: Content-Type
-                    Vary: Accept-Encoding
-                    Cache-Control: max-age=0
-                    Content-Encoding: gzip
-                    Content-Type: text/json; charset=UTF-8
-                    Connection: Keep-Alive
-                    Keep-Alive: timeout=15, max=100
-                    Content-Length: 1357
-                 */
                 GetHeaders(originalResponse);
                 String _buf = "HTTP/1.1 200 OK\r\n";
                 foreach (string header in GetHeaders(originalResponse))
