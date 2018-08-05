@@ -23,6 +23,7 @@ namespace NicoNicoTranslator
     }
     class NicoNicoServer
     {
+        string ver = "1.1V";
         GoogleTranslator googleTranslator;
         Language from;
         Language to;
@@ -41,6 +42,10 @@ namespace NicoNicoTranslator
             translator = Translator;
             portNum = PortNum;
             listenNum = ListenNum;
+            WriteConsole("NicoNicoTranslator " + ver, ConsoleColor.Green);
+            WriteConsole("오류 제보 : https://github.com/009342/Nico-Nico-Video-Translator",ConsoleColor.DarkGreen);
+            WriteConsole("제작자 블로그 : http://sshbrain.tistory.com", ConsoleColor.DarkGreen);
+            WriteConsole("");
             while (true)
             {
                 if (translator == (int)Translators.User)
