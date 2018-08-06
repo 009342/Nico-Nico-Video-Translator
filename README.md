@@ -43,7 +43,8 @@ http://sshbrain.tistory.com/48
 6. 정상적으로 실행이 되면, 다음과 같이 실행됩니다.
 <pre><code>사용할 번역 서비스를 선택해주세요.
 1. Google 번역
-2. 사용하지 않음
+2. 파파고 번역
+3. 사용하지 않음
 1
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 </pre></code>
@@ -51,7 +52,8 @@ http://sshbrain.tistory.com/48
 만약 위와 같은 메세지가 뜨지 않고, 다음과 같은 오류가 뜰 경우,
 <pre><code>사용할 번역 서비스를 선택해주세요.
 1. Google 번역
-2. 사용하지 않음
+2. 파파고 번역
+3. 사용하지 않음
 1
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 
@@ -67,7 +69,8 @@ http://sshbrain.tistory.com/48
 7. 니코니코 동화 사이트에 접속하여 동영상을 보게 되면,
 <pre><code>사용할 번역 서비스를 선택해주세요.
 1. Google 번역
-2. 사용하지 않음
+2. 파파고 번역
+3. 사용하지 않음
 1
 서버가 127.0.0.1:80에서 작동되고 있습니다...
 접속 :127.0.0.1:2231
@@ -105,6 +108,10 @@ Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
 
 http://nowonbun.tistory.com/178
 
+https://github.com/Grizley56/GoogleTranslateFreeApi
+
+https://github.com/009342/PapagoTranslateAPI
+
 위 코드의 일부를 인용하였습니다.
 
 ## 주의
@@ -118,6 +125,10 @@ GNU 일반 공중 사용 허가서(GNU General Public License)의 전문은 다�
 https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
+
+#### 2018-08-06 #3
+
+파파고 번역 API 구현과 파파고 번역 기능을 추가하였습니다.
 
 #### 2018-08-06 #2
 
