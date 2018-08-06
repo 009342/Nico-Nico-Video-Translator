@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using GoogleTranslateFreeApi;
 using Newtonsoft.Json.Linq;
-
+using PapagoTranslateAPI;
 namespace NicoNicoTranslator
 {
     class Program
@@ -23,8 +23,9 @@ namespace NicoNicoTranslator
     }
     class NicoNicoServer
     {
-        string ver = "1.1V";
+        string ver = "2.0V";
         GoogleTranslator googleTranslator;
+        PapagoTranslate papagoTranslate;
         Language from;
         Language to;
         private int portNum;
@@ -34,6 +35,7 @@ namespace NicoNicoTranslator
         public enum Translators
         {
             Google = 1,
+            Papago,
             None,
             User
         }
@@ -52,10 +54,11 @@ namespace NicoNicoTranslator
                 {
                     WriteConsole("사용할 번역 서비스를 선택해주세요.", ConsoleColor.Cyan);
                     WriteConsole("1. Google 번역");
-                    WriteConsole("2. 사용하지 않음");
+                    WriteConsole("2. 파파고 번역");
+                    WriteConsole("3. 사용하지 않음");
                     translator = int.Parse(Console.ReadLine());
                 }
-                if (translator == (int)Translators.Google || translator == (int)Translators.None)
+                if (translator == (int)Translators.Google || translator == (int)Translators.Papago || translator == (int)Translators.None)
                 {
                     break;
                 }
@@ -65,9 +68,11 @@ namespace NicoNicoTranslator
                 googleTranslator = new GoogleTranslator();
                 from = GoogleTranslator.GetLanguageByName("Japanese");
                 to = GoogleTranslator.GetLanguageByName("Korean");
-
             }
-
+            if(translator == (int)Translators.Papago)
+            {
+                papagoTranslate = new PapagoTranslate();
+            }
         }
         public void RunServer()
         {
@@ -159,7 +164,6 @@ namespace NicoNicoTranslator
                                 JArray jArray = JArray.Parse(content);
                                 List<JToken> jTokens = new List<JToken>();
                                 List<string> splited = new List<string>();
-                                List<string> translated = new List<string>();
                                 var jTokensList = new List<List<JToken>>();
                                 int c = 0;
                                 int d = 0;
@@ -168,7 +172,7 @@ namespace NicoNicoTranslator
                                 {
                                     if (item["chat"] != null && item["chat"]["content"] != null)
                                     {
-                                        jTokens.Add(item["chat"]["content"]);
+                                        jTokens.Add(item);
                                     }
                                 }
                                 while (true)
@@ -177,7 +181,7 @@ namespace NicoNicoTranslator
                                     cb = c;
                                     for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
                                     {
-                                        i += (jTokens[c] + Environment.NewLine).Length;
+                                        i += (jTokens[c]["chat"]["content"] + Environment.NewLine).Length;
                                     }
                                     if (c == jTokens.Count)
                                     {
@@ -189,46 +193,43 @@ namespace NicoNicoTranslator
                                         jTokensList.Add(jTokens.GetRange(cb, d - 1));
                                         c--;
                                     }
-
-
                                 }
                                 foreach (List<JToken> list in jTokensList)
                                 {
                                     string s = "";
                                     foreach (JToken item in list)
                                     {
-                                        s += (item + Environment.NewLine);
+                                        s += (item["chat"]["content"] + Environment.NewLine);
                                     }
                                     splited.Add(s);
                                 }
+                                c = 0;//재활용
                                 for (int i = 0; i < splited.Count; i++)
                                 {
-                                    if(i!=0) Thread.Sleep(5000); 
-                                    TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
-                                    string[] lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                                    if (i != 0) Thread.Sleep(5000);
+                                    string[] lines = null;
+                                    if (translator == (int)Translators.Google)
+                                    {
+                                        TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
+                                        lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                                    }
+                                    if (translator == (int)Translators.Papago)
+                                    {
+                                        splited[i] = splited[i].Replace(Environment.NewLine, "\n");
+                                        string result = papagoTranslate.Translate("ja", "ko", splited[i], "nsmt");
+                                        lines = result.Split(new string[] {"\n"}, StringSplitOptions.None);
+                                    }
+
+
                                     for (int j = 0; j < lines.Length; j++)
                                     {
-                                        translated.Add(lines[j]);
+                                        jTokens[c++]["chat"]["content"] = lines[j];
                                     }
-                                    Console.WriteLine("{0} / {1} 완료", translated.Count, jTokens.Count);
-                                }
-                                c = 0;//재활용
-                                foreach (JToken item in jArray)
-                                {
-                                    if (item["chat"] != null && item["chat"]["content"] != null)
-                                    {
-                                        item["chat"]["content"] = translated[c++];
-                                    }
+                                    Console.WriteLine("{0} / {1} 완료", c, jTokens.Count);
                                 }
                                 client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
                             }
                         }
-
-
-
-
-
-
                     }
                     else
                     {
