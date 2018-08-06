@@ -2,3 +2,6 @@
 	path = googleTranslate
 	url = https://github.com/Grizley56/GoogleTranslateFreeApi.git
 	ignore = dirty
+[submodule "PapagoTranslateAPI"]
+	path = PapagoTranslateAPI
+	url = https://github.com/009342/PapagoTranslateAPI.git
