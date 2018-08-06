@@ -126,6 +126,10 @@ https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
 
+#### 2018-08-07
+
+Google 번역 API의 버그로 인해 GoogleTranslateFreeApi를 54afbff로 초기화
+
 #### 2018-08-06 #3
 
 파파고 번역 API 구현과 파파고 번역 기능을 추가하였습니다.

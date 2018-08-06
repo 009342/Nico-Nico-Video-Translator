@@ -23,7 +23,7 @@ namespace NicoNicoTranslator
     }
     class NicoNicoServer
     {
-        string ver = "2.0V";
+        string ver = "2.1V";
         GoogleTranslator googleTranslator;
         PapagoTranslate papagoTranslate;
         Language from;
@@ -69,7 +69,7 @@ namespace NicoNicoTranslator
                 from = GoogleTranslator.GetLanguageByName("Japanese");
                 to = GoogleTranslator.GetLanguageByName("Korean");
             }
-            if(translator == (int)Translators.Papago)
+            if (translator == (int)Translators.Papago)
             {
                 papagoTranslate = new PapagoTranslate();
             }
@@ -97,7 +97,9 @@ namespace NicoNicoTranslator
         }
         public async void RunServerThreadAsync(Socket client)
         {
+#if !DEBUG
             try
+#endif
             {
                 String originalResponse = Recieve(client); //헤더 가져오기
                 if (originalResponse != "")
@@ -210,14 +212,14 @@ namespace NicoNicoTranslator
                                     string[] lines = null;
                                     if (translator == (int)Translators.Google)
                                     {
-                                        TranslationResult result = await googleTranslator.TranslateAsync(splited[i], from, to);
+                                        TranslationResult result = await googleTranslator.TranslateLiteAsync(splited[i], from, to);
                                         lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
                                     }
                                     if (translator == (int)Translators.Papago)
                                     {
                                         splited[i] = splited[i].Replace(Environment.NewLine, "\n");
                                         string result = papagoTranslate.Translate("ja", "ko", splited[i], "nsmt");
-                                        lines = result.Split(new string[] {"\n"}, StringSplitOptions.None);
+                                        lines = result.Split(new string[] { "\n" }, StringSplitOptions.None);
                                     }
 
 
@@ -240,12 +242,15 @@ namespace NicoNicoTranslator
                 WriteConsole("접속해제 :" + ((IPEndPoint)client.RemoteEndPoint).Address + ":" + ((IPEndPoint)client.RemoteEndPoint).Port, ConsoleColor.Green);
                 client.Close();
             }
+#if !DEBUG
+
             catch (Exception ex)
             {
                 WriteConsole("클라이언트와의 연결에서 오류가 발생했습니다. 자세한 오류는 아래를 참고해주시기 바랍니다.", ConsoleColor.Red);
                 WriteConsole(ex.ToString(), ConsoleColor.Red);
                 client.Close();
             }
+#endif
         }
         public void SendOriginalServer(Socket client, string others, string originalResponse)
         {
