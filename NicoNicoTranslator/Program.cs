@@ -17,13 +17,13 @@ namespace NicoNicoTranslator
     {
         static void Main(string[] args)
         {
-            NicoNicoServer NNC = new NicoNicoServer(80, 20);
+            NicoNicoServer NNC = new NicoNicoServer(80, 20, args.Length == 1 ? int.Parse(args[0]) : (int)NicoNicoServer.Translators.User);
             NNC.RunServer();
         }
     }
     class NicoNicoServer
     {
-        string ver = "2.1V";
+        string ver = "2.2V";
         GoogleTranslator googleTranslator;
         PapagoTranslate papagoTranslate;
         Language from;
@@ -101,23 +101,23 @@ namespace NicoNicoTranslator
             try
 #endif
             {
-                String originalResponse = Recieve(client); //헤더 가져오기
-                if (originalResponse != "")
+                String originalRequest = Recieve(client); //헤더 가져오기
+                if (originalRequest != "")
                 {
-                    foreach (String headers in GetHeaders(originalResponse))
+                    foreach (String headers in GetHeaders(originalRequest))
                     {
                         WriteConsole(headers, ConsoleColor.DarkGray);
                     }
-                    if (originalResponse.Contains("api.json/")) // 일반적인 경우
+                    if (originalRequest.Contains("nmsg") && originalRequest.Contains("api.json/")) // 일반적인 경우
                     {
                         if (translator == (int)Translators.None)
                         {
-                            SendOriginalServer(client, "api.json/", originalResponse);
+                            SendOriginalServer(client, "api.json/", originalRequest);
                         }
                         else
                         {
                             var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
-                            foreach (string header in GetHeaders(originalResponse))
+                            foreach (string header in GetHeaders(originalRequest))
                             {
                                 if (header.Contains("Host"))
                                 {
@@ -146,7 +146,7 @@ namespace NicoNicoTranslator
 
                             }
                             http.Method = "POST";
-                            string parsedContent = GetPayloads(originalResponse);
+                            string parsedContent = GetPayloads(originalRequest);
                             if (parsedContent != "")
                             {
 
@@ -177,65 +177,120 @@ namespace NicoNicoTranslator
                                         jTokens.Add(item);
                                     }
                                 }
-                                while (true)
+                                if (jTokens.Count != 0)
                                 {
-                                    d = 0;
-                                    cb = c;
-                                    for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
+                                    while (true)
                                     {
-                                        i += (jTokens[c]["chat"]["content"] + Environment.NewLine).Length;
+                                        d = 0;
+                                        cb = c;
+                                        for (int i = 0; i < 5000 && c < jTokens.Count; c++, d++)
+                                        {
+                                            i += (jTokens[c]["chat"]["content"] + Environment.NewLine).Length;
+                                        }
+                                        if (c == jTokens.Count)
+                                        {
+                                            jTokensList.Add(jTokens.GetRange(cb, d));
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            jTokensList.Add(jTokens.GetRange(cb, d - 1));
+                                            c--;
+                                        }
                                     }
-                                    if (c == jTokens.Count)
+                                    foreach (List<JToken> list in jTokensList)
                                     {
-                                        jTokensList.Add(jTokens.GetRange(cb, d));
-                                        break;
+                                        string s = "";
+                                        foreach (JToken item in list)
+                                        {
+                                            s += (item["chat"]["content"] + Environment.NewLine);
+                                        }
+                                        splited.Add(s);
                                     }
-                                    else
+                                    c = 0;//재활용
+                                    for (int i = 0; i < splited.Count; i++)
                                     {
-                                        jTokensList.Add(jTokens.GetRange(cb, d - 1));
-                                        c--;
-                                    }
-                                }
-                                foreach (List<JToken> list in jTokensList)
-                                {
-                                    string s = "";
-                                    foreach (JToken item in list)
-                                    {
-                                        s += (item["chat"]["content"] + Environment.NewLine);
-                                    }
-                                    splited.Add(s);
-                                }
-                                c = 0;//재활용
-                                for (int i = 0; i < splited.Count; i++)
-                                {
-                                    if (i != 0) Thread.Sleep(5000);
-                                    string[] lines = null;
-                                    if (translator == (int)Translators.Google)
-                                    {
-                                        TranslationResult result = await googleTranslator.TranslateLiteAsync(splited[i], from, to);
-                                        lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-                                    }
-                                    if (translator == (int)Translators.Papago)
-                                    {
-                                        splited[i] = splited[i].Replace(Environment.NewLine, "\n");
-                                        string result = papagoTranslate.Translate("ja", "ko", splited[i], "nsmt");
-                                        lines = result.Split(new string[] { "\n" }, StringSplitOptions.None);
-                                    }
+                                        if (i != 0) Thread.Sleep(5000);
+                                        string[] lines = null;
+                                        if (translator == (int)Translators.Google)
+                                        {
+                                            TranslationResult result = await googleTranslator.TranslateLiteAsync(splited[i], from, to);
+                                            lines = result.MergedTranslation.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+                                        }
+                                        if (translator == (int)Translators.Papago)
+                                        {
+                                            splited[i] = splited[i].Replace(Environment.NewLine, "\n");
+                                            string result = papagoTranslate.Translate("ja", "ko", splited[i], "nsmt");
+                                            lines = result.Split(new string[] { "\n" }, StringSplitOptions.None);
+                                        }
 
 
-                                    for (int j = 0; j < lines.Length; j++)
-                                    {
-                                        jTokens[c++]["chat"]["content"] = lines[j];
+                                        for (int j = 0; j < lines.Length; j++)
+                                        {
+                                            jTokens[c++]["chat"]["content"] = lines[j];
+                                        }
+                                        Console.WriteLine("{0} / {1} 완료", c, jTokens.Count);
                                     }
-                                    Console.WriteLine("{0} / {1} 완료", c, jTokens.Count);
                                 }
                                 client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
                             }
                         }
                     }
+                    else if (originalRequest.Contains("www.nicovideo.jp"))
+                    {
+                        var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.110.184" + originalRequest.Split(' ')[1].Split('\r')[0]));
+                        foreach (string header in GetHeaders(originalRequest))
+                        {
+                            if (header.Contains("Host:"))
+                            {
+                                http.Host = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("User-Agent:"))
+                            {
+                                http.UserAgent = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Content-Type:"))
+                            {
+                                http.UserAgent = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Accept:"))
+                            {
+                                http.Accept = GetHeaderValue(header);
+                            }
+                            else if (header.Contains("Referer:"))
+                            {
+                                http.Referer = GetHeaderValue(header);
+                            }
+                            else
+                            {
+                                //http.Headers.Add(header);
+                            }
+
+                        }
+                        http.Method = originalRequest.Contains("POST") ? "POST" : "GET";
+                        string parsedContent = GetPayloads(originalRequest);
+                        if (parsedContent != "")
+                        {
+
+                            UTF8Encoding encoding = new UTF8Encoding();
+                            Byte[] bytes = encoding.GetBytes(parsedContent);
+
+                            Stream newStream = http.GetRequestStream();
+                            newStream.Write(bytes, 0, bytes.Length);
+                            newStream.Close();
+                        }
+                        var response = http.GetResponse();
+                        string responseOriginal = Encoding.UTF8.GetString(response.Headers.ToByteArray());
+                        var stream = response.GetResponseStream();
+                        var sr = new StreamReader(stream, Encoding.UTF8);
+                        string content = sr.ReadToEnd();
+                        response.Close();
+                        content = content.Replace("https:\\/\\/nmsg.nicovideo.jp", "http:\\/\\/nmsg.nicovideo.jp");
+                        client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
+                    }
                     else
                     {
-                        SendOriginalServer(client, originalResponse.Split('/')[1].Split(' ')[0], originalResponse);
+                        SendOriginalServer(client, originalRequest.Split('/')[1].Split(' ')[0], originalRequest);
                     }
                 }
 
@@ -252,10 +307,10 @@ namespace NicoNicoTranslator
             }
 #endif
         }
-        public void SendOriginalServer(Socket client, string others, string originalResponse)
+        public void SendOriginalServer(Socket client, string others, string originalRequest)
         {
             var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/" + others));
-            foreach (string header in GetHeaders(originalResponse))
+            foreach (string header in GetHeaders(originalRequest))
             {
                 if (header.Contains("Host"))
                 {
@@ -283,8 +338,8 @@ namespace NicoNicoTranslator
                 }
 
             }
-            http.Method = originalResponse.Contains("POST") ? "POST" : "GET";
-            string parsedContent = GetPayloads(originalResponse);
+            http.Method = originalRequest.Contains("POST") ? "POST" : "GET";
+            string parsedContent = GetPayloads(originalRequest);
             if (parsedContent != "")
             {
 
@@ -333,7 +388,8 @@ namespace NicoNicoTranslator
                     end = i;
                 }
             }
-            if (buf.Length == end + 2) return buf[end + 1];
+            if (buf.Length == end + 2)
+                return buf[end + 1];
             return "";
         }
         public List<string> GetHeaders(String Response)
@@ -361,6 +417,7 @@ namespace NicoNicoTranslator
 
         public byte[] GetSendByte(Socket client, String Content, string originalResponse)
         {
+            Content = "에러가 뜨는 이유를 모르겠어요오오오옹";
             byte[] _data2 = Encoding.UTF8.GetBytes(Content);
             try
             {
@@ -370,18 +427,21 @@ namespace NicoNicoTranslator
                 {
                     _buf += header + "\r\n";
                 }
+                _buf += "Content-Length: " + _data2.Length.ToString() + "\r\n";
                 _buf += "ServiceBy: 009342@naver.com\r\n";
                 _buf += "\r\n";
                 client.Send(Encoding.UTF8.GetBytes(_buf));
             }
             catch
             {
-                String _buf = "HTTP/1.1 100 BedRequest ok\r\n";
+                _data2 = Encoding.UTF8.GetBytes("Bad Request");
+                String _buf = "HTTP/1.1 100 BadRequest ok\r\n";
                 _buf += "ServiceBy: 009342@naver.com\r\n";
                 _buf += "content-type:text/html\r\n";
+                _buf += "Content-Length: " + _data2.Length.ToString() + "\r\n";
                 _buf += "\r\n";
                 client.Send(Encoding.UTF8.GetBytes(_buf));
-                _data2 = Encoding.UTF8.GetBytes("Bed Request");
+                
             }
             return _data2;
         }
