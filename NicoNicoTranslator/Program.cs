@@ -23,7 +23,7 @@ namespace NicoNicoTranslator
     }
     class NicoNicoServer
     {
-        string ver = "2.2V";
+        string ver = "3.0V";
         GoogleTranslator googleTranslator;
         PapagoTranslate papagoTranslate;
         Language from;
@@ -398,7 +398,7 @@ namespace NicoNicoTranslator
             List<string> headers = new List<string>();
             foreach (string header in buf)
             {
-                if (header.Contains(":") && !header.Contains("Connection") && !header.Contains("Content-Length"))
+                if (header.Contains(":") && !header.Contains("Connection") && !header.Contains("Content-Length") && !header.Contains("chunked"))
                 {
                     headers.Add(header);
 
@@ -417,7 +417,6 @@ namespace NicoNicoTranslator
 
         public byte[] GetSendByte(Socket client, String Content, string originalResponse)
         {
-            Content = "에러가 뜨는 이유를 모르겠어요오오오옹";
             byte[] _data2 = Encoding.UTF8.GetBytes(Content);
             try
             {
