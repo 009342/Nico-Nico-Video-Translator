@@ -10,7 +10,7 @@ http://sshbrain.tistory.com/48
 
 2. 파일->열기를 눌러 파일이름 항목에 C:\Windows\System32\drivers\etc\hosts 를 적고 열기를 눌러주세요. 
 
-3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp** 를 추가해주세요. 추가하면 다음과 같이 되어야 합니다.
+3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp**와 **127.0.0.1 www.nicovideo.jp**를 추가해주세요. 추가하면 다음과 같이 되어야 합니다.
 <pre><code># Copyright (c) 1993-2009 Microsoft Corp.
 #
 # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
@@ -34,6 +34,7 @@ http://sshbrain.tistory.com/48
 #	::1             localhost
 
 127.0.0.1 nmsg.nicovideo.jp
+127.0.0.1 www.nicovideo.jp
 기타 사용자가 추가한 구문들...</pre></code>
 
 4. https://github.com/009342/Nico-Nico-Video-Translator/releases 에서 최신버전의 니코니코 동화 번역기를 다운받아주세요.
@@ -90,7 +91,15 @@ Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
 
 8. 한 번만 실행시켜 놓으면 컴퓨터나 프로그램이 꺼지지 않는한 자동 번역이 이뤄집니다.
 
-9. 추후 번역 기능을 사용하고 싶지 않으시다면, 2-3 과정을 반복하되, 맨 아래줄에 추가한 **127.0.0.1 nmsg.nicovideo.jp** 만 삭제해주시면 됩니다.
+9. 추후 번역 기능을 사용하고 싶지 않으시다면, 2-3 과정을 반복하되, 맨 아래줄에 추가한 것들만 삭제해주시면 됩니다.
+
+## 알려진 버그
+
+플래시 플레이어를 지원하지 않습니다. 이 버그는, 플래시 플레이어가 간헐적으로 작동하는 관계로 잠시 후 다시 시도해주시거나 새로 고침을 눌러 HTML5 플레이어로 영상을 시청해주시기 바랍니다.
+
+**로그인시 https://account.nicovideo.jp로 접속해야만 합니다.**
+
+**언어변경이 불가능합니다.**
 
 ## 오류를 제보하고 싶어요!
 
@@ -100,9 +109,6 @@ Accept-Language: ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7
 
 오류를 제보하실때에는, 꼭! 동영상 오류가 일어나는 주소를 반드시 함께 첨부해주시기 바랍니다.
 
-## 알려진 버그
-
-플래시 플레이어를 지원하지 않습니다. 이 버그는, 플래시 플레이어가 간헐적으로 작동하는 관계로 잠시 후 다시 시도해주시거나 새로 고침을 눌러 HTML5 플레이어로 영상을 시청해주시기 바랍니다.
 
 ## 참고
 
@@ -125,6 +131,12 @@ GNU 일반 공중 사용 허가서(GNU General Public License)의 전문은 다�
 https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
+
+#### 2018-10-04
+
+nmsg.nicovideo.jp를 HTTPS에서 HTTP를 이용하도록 임시로 수정했지만, 매우 안정적이지 않습니다.
+
+상황에 따라서 적당히 이용해주시기를 부탁드립니다.
 
 #### 2018-08-07
 
