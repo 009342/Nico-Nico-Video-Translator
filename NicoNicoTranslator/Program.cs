@@ -119,23 +119,23 @@ namespace NicoNicoTranslator
                             var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/api.json/"));
                             foreach (string header in GetHeaders(originalRequest))
                             {
-                                if (header.Contains("Host"))
+                                if (header.Contains("Host:"))
                                 {
                                     http.Host = GetHeaderValue(header);
                                 }
-                                else if (header.Contains("User-Agent"))
+                                else if (header.Contains("User-Agent:"))
                                 {
                                     http.UserAgent = GetHeaderValue(header);
                                 }
-                                else if (header.Contains("Content-Type"))
+                                else if (header.Contains("Content-Type:"))
                                 {
                                     http.UserAgent = GetHeaderValue(header);
                                 }
-                                else if (header.Contains("Accept"))
+                                else if (header.Contains("Accept:"))
                                 {
                                     http.Accept = GetHeaderValue(header);
                                 }
-                                else if (header.Contains("Referer"))
+                                else if (header.Contains("Referer:"))
                                 {
                                     http.Referer = GetHeaderValue(header);
                                 }
@@ -232,7 +232,7 @@ namespace NicoNicoTranslator
                                         Console.WriteLine("{0} / {1} 완료", c, jTokens.Count);
                                     }
                                 }
-                                client.Send(GetSendByte(client, jArray.ToString(), responseOriginal)); //클라이언트에 HTML 등 전송
+                                client.Send(GetSendByte(client, jArray.ToString(), responseOriginal, (int)((HttpWebResponse)response).StatusCode)); //클라이언트에 HTML 등 전송
                             }
                         }
                     }
@@ -263,7 +263,7 @@ namespace NicoNicoTranslator
                             }
                             else
                             {
-                                //http.Headers.Add(header);
+                                http.Headers.Add(header);
                             }
 
                         }
@@ -286,7 +286,7 @@ namespace NicoNicoTranslator
                         string content = sr.ReadToEnd();
                         response.Close();
                         content = content.Replace("https:\\/\\/nmsg.nicovideo.jp", "http:\\/\\/nmsg.nicovideo.jp");
-                        client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
+                        client.Send(GetSendByte(client, content, responseOriginal, (int)((HttpWebResponse)response).StatusCode)); //클라이언트에 HTML 등 전송
                     }
                     else
                     {
@@ -312,23 +312,23 @@ namespace NicoNicoTranslator
             var http = (HttpWebRequest)WebRequest.Create(new Uri("http://202.248.252.234/" + others));
             foreach (string header in GetHeaders(originalRequest))
             {
-                if (header.Contains("Host"))
+                if (header.Contains("Host:"))
                 {
                     http.Host = GetHeaderValue(header);
                 }
-                else if (header.Contains("User-Agent"))
+                else if (header.Contains("User-Agent:"))
                 {
                     http.UserAgent = GetHeaderValue(header);
                 }
-                else if (header.Contains("Content-Type"))
+                else if (header.Contains("Content-Type:"))
                 {
                     http.UserAgent = GetHeaderValue(header);
                 }
-                else if (header.Contains("Accept"))
+                else if (header.Contains("Accept:"))
                 {
                     http.Accept = GetHeaderValue(header);
                 }
-                else if (header.Contains("Referer"))
+                else if (header.Contains("Referer:"))
                 {
                     http.Referer = GetHeaderValue(header);
                 }
@@ -356,7 +356,7 @@ namespace NicoNicoTranslator
             var sr = new StreamReader(stream);
             string content = sr.ReadToEnd();
             response.Close();
-            client.Send(GetSendByte(client, content, responseOriginal)); //클라이언트에 HTML 등 전송
+            client.Send(GetSendByte(client, content, responseOriginal, (int)((HttpWebResponse)response).StatusCode)); //클라이언트에 HTML 등 전송
         }
         public static bool isHangulHanjaJapaness(String str)
         {
@@ -398,7 +398,7 @@ namespace NicoNicoTranslator
             List<string> headers = new List<string>();
             foreach (string header in buf)
             {
-                if (header.Contains(":") && !header.Contains("Connection") && !header.Contains("Content-Length") && !header.Contains("chunked"))
+                if (header.Contains(":") && !header.Contains("Connection:") && !header.Contains("Content-Length") && !header.Contains("gzip") && !header.Contains("chunked"))
                 {
                     headers.Add(header);
 
@@ -415,13 +415,13 @@ namespace NicoNicoTranslator
         }
 
 
-        public byte[] GetSendByte(Socket client, String Content, string originalResponse)
+        public byte[] GetSendByte(Socket client, String Content, string originalResponse, int code)
         {
             byte[] _data2 = Encoding.UTF8.GetBytes(Content);
             try
             {
                 GetHeaders(originalResponse);
-                String _buf = "HTTP/1.1 200 OK\r\n";
+                String _buf = "HTTP/1.1 " + code + " OK\r\n";
                 foreach (string header in GetHeaders(originalResponse))
                 {
                     _buf += header + "\r\n";
@@ -440,7 +440,7 @@ namespace NicoNicoTranslator
                 _buf += "Content-Length: " + _data2.Length.ToString() + "\r\n";
                 _buf += "\r\n";
                 client.Send(Encoding.UTF8.GetBytes(_buf));
-                
+
             }
             return _data2;
         }
