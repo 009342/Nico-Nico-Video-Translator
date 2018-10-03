@@ -10,7 +10,7 @@ http://sshbrain.tistory.com/48
 
 2. 파일->열기를 눌러 파일이름 항목에 C:\Windows\System32\drivers\etc\hosts 를 적고 열기를 눌러주세요. 
 
-3. 맨 아래줄에 **127.0.0.1 nmsg.nicovideo.jp**와 **127.0.0.1 www.nicovideo.jp**를 추가해주세요. 추가하면 다음과 같이 되어야 합니다.
+3. 맨 아래줄에 127.0.0.1 nmsg.nicovideo.jp와 127.0.0.1 www.nicovideo.jp 를 추가해주세요. 추가하면 다음과 같이 되어야 합니다.
 <pre><code># Copyright (c) 1993-2009 Microsoft Corp.
 #
 # This is a sample HOSTS file used by Microsoft TCP/IP for Windows.
