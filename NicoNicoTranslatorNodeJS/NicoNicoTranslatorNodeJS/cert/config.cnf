@@ -1,0 +1,27 @@
+[CA_default]
+copy_extensions = copy
+
+[req]
+prompt = no
+string_mask = utf8only
+utf8 = yes
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_req
+
+[dn]
+C = KR                       
+CN = sshbrain.tistory.com
+emailAddress = 009342@naver.com
+O = NA      
+OU = NA                        
+L = NA                      
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+subjectAltName = @alternate_names
+
+[alternate_names]
+DNS.1 = nmsg.nicovideo.jp
+IP.1 = 127.0.0.1
