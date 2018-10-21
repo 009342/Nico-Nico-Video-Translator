@@ -24,4 +24,5 @@ subjectAltName = @alternate_names
 
 [alternate_names]
 DNS.1 = nmsg.nicovideo.jp
+DNS.2 = localhost
 IP.1 = 127.0.0.1

@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var https = require('https');
 var express = require('express');
@@ -6,13 +14,19 @@ var fs = require('fs');
 var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
+var PapagoTranslator = require('./PapagoTranslator');
 app.use(bodyParser.text());
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
 if (!(fs.existsSync("./cert/private.key") && fs.existsSync("./cert/cert.crt"))) {
     console.error('인증서가 존재하지 않습니다.');
 }
 else {
     https.createServer({ key: fs.readFileSync("./cert/private.key"), cert: fs.readFileSync("./cert/cert.crt") }, app).listen(443, function () {
-        console.log("HTTPS 서버가 작동 중 입니다.");
+        console.log("HTTPS 서버가 작동 중입니다.");
     });
     app.post('/api.json', function (req, res) {
         res.writeHead(200, {
@@ -27,32 +41,54 @@ else {
             url: 'http://202.248.252.234/api.json',
             body: reqbody
         }, function (error, response, nmsgbody) {
-            var jsonbody = JSON.parse(nmsgbody);
-            var chats = [];
-            var page = [[]];
-            for (var i in jsonbody) {
-                if (jsonbody[i].chat && jsonbody[i].chat.content) {
-                    chats.push(jsonbody[i].chat.content);
+            return __awaiter(this, void 0, void 0, function* () {
+                var jsonbody = JSON.parse(nmsgbody);
+                var chats = [];
+                var page = [[]];
+                for (var i in jsonbody) {
+                    if (jsonbody[i].chat && jsonbody[i].chat.content) {
+                        chats.push(jsonbody[i].chat.content);
+                    }
                 }
-            }
-            var count = 0;
-            var pagecount = 0;
-            while (true) {
-                for (var strlength = 0; strlength < 5000 && count != chats.length;) {
-                    strlength += (chats[count] + "\r\n").length;
-                    page[pagecount].push(chats[count++]);
+                var count = 0;
+                var pagecount = 0;
+                while (true) {
+                    for (var strlength = 0; strlength < 4000 && count != chats.length;) {
+                        strlength += (chats[count] + "\r\n").length;
+                        page[pagecount].push(chats[count++]);
+                    }
+                    if (count == chats.length) {
+                        break;
+                    }
+                    else {
+                        page.push([]);
+                        page[pagecount + 1].push(page[pagecount].pop());
+                        pagecount++;
+                    }
                 }
-                if (count == chats.length) {
-                    break;
+                var result = "";
+                count = 0;
+                for (var c = 0; c < page.length; c++) {
+                    var temp = "";
+                    for (var k = 0; k < page[c].length; k++) {
+                        temp += page[c][k] += "\r\n";
+                        count++;
+                    }
+                    if (c != 0)
+                        yield sleep(2000);
+                    result += (yield PapagoTranslator('ja', 'ko', temp, 'n2mt')) + "\r\n";
+                    console.log(count + "/" + chats.length + "완료");
                 }
-                else {
-                    page[pagecount + 1].push(page[pagecount].pop());
-                    page.push([]);
-                    pagecount++;
+                var results = result.split(/\r?\n/);
+                c = 0;
+                for (var i in jsonbody) {
+                    if (jsonbody[i].chat && jsonbody[i].chat.content) {
+                        jsonbody[i].chat.content = results[c++];
+                    }
                 }
-            }
-            res.write(JSON.stringify(jsonbody));
-            res.end();
+                res.write(JSON.stringify(jsonbody));
+                res.end();
+            });
         });
     });
 }
