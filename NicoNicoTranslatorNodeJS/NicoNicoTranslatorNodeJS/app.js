@@ -15,7 +15,13 @@ var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
+var version = '1.0';
 app.use(bodyParser.text());
+console.log('');
+console.log('NicoNicoTranslator (' + version + '-nodejs)');
+console.log('오류 제보 : https://github.com/009342/Nico-Nico-Video-Translator/issues');
+console.log('제작자 블로그 : http://sshbrain.tistory.com');
+console.log('');
 function sleep(ms) {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
