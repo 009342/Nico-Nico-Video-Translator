@@ -2,11 +2,7 @@
 
 ## 사용법
 
-1. node.js와 OpenSSL의 설치가 선행되어야 합니다.
-
-윈도우용 OpenSSL의 설치는 다음 링크의 Download Win32 OpenSSL을 참고해주세요.
-
-https://slproweb.com/products/Win32OpenSSL.html
+1. node.js의 설치가 선행되어야 합니다.
 
 node.js의 설치는 다음 링크를 참고해주세요.
 
@@ -42,11 +38,11 @@ https://nodejs.org/ko/
 127.0.0.1 nmsg.nicovideo.jp
 기타 사용자가 추가한 구문들...</pre></code>
 
-5. https://github.com/009342/Nico-Nico-Video-Translator/releases 에서 node.js버전의 니코니코 동화 번역기를 다운받아주세요.
+5. https://github.com/009342/Nico-Nico-Video-Translator/releases 에서 node.js버전의 니코니코 동화 번역기를 다운로드 받고 압축을 풀어주세요.
 
-6. 다운받은 파일의 압축을 풀어주고 cert폴더 내의 cert.bat를 관리자권한으로 실행시켜 주세요.
+6. http://wiki.overbyte.eu/wiki/index.php/ICS_Download 에서 Download OpenSSL Binaries (required for SSL-enabled components) 항목의 최신 버전의 OpenSSL을 다운로드 받은 다음 cert폴더 내에 압축을 풀어주세요.
 
-7. 정상적으로 인증서가 설치되면 다음과 같이 출력되어야 합니다.
+7. cert폴더 내의 cert.bat를 관리자권한으로 실행시켜 주세요. 정상적으로 인증서가 설치되면 다음과 같이 출력되어야 합니다.
 <pre><code>관리자 권한으로 실행해야 인증서가 설치됩니다!
 계속하려면 아무 키나 누르십시오 . . .
 개인키를 생성하는 중입니다...
@@ -66,7 +62,7 @@ CertUtil: -addstore 명령이 성공적으로 완료되었습니다.
 계속하려면 아무 키나 누르십시오 . . .
 </pre></code>
 
-8. 다운받은 파일의 run.bat를 실행시켜 주시면 자동으로 동영상 열람시 번역이 됩니다.
+8. 다운로드 받은 파일의 run.bat를 실행시켜 주시면 자동으로 동영상 열람시 번역이 됩니다.
 
 9. 한 번만 실행시켜 놓으면 컴퓨터나 프로그램이 꺼지지 않는한 자동 번역이 이뤄집니다.
 
