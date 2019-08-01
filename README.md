@@ -44,6 +44,10 @@ https://github.com/009342/Nico-Nico-Video-Translator/blob/master/LICENSE
 
 ### 변경 사항
 
+#### 2019-08-02
+
+DNS에서 nmsg.nicovideo.jp의 IP를 가져와 IP가 변경되어도 안정적으로 작동하게 수정하였습니다.
+
 #### 2018-10-22
 
 HTTPS 적용을 위해 언어를 C#에서 HTTPS라이브러리가 제공되는 node.js버전을 추가했습니다.

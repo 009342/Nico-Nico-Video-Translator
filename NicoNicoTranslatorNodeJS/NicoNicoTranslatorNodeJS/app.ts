@@ -1,5 +1,6 @@
 ﻿import { stringify } from "querystring";
 
+const dns = require('dns');
 var https = require('https');
 var express = require('express');
 var fs = require('fs');
@@ -8,12 +9,25 @@ var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
 var version = '1.0';
+var ip = '255.255.255.255';
 app.use(bodyParser.text());
 console.log('');
 console.log('NicoNicoTranslator (' + version + '-nodejs)');
 console.log('오류 제보 : https://github.com/009342/Nico-Nico-Video-Translator/issues');
 console.log('제작자 블로그 : http://sshbrain.tistory.com');
 console.log('');
+
+dns.resolve('nmsg.nicovideo.jp', (err, result) => {
+
+    if (err) {
+        console.log('nmsg.nicovideo.jp의 IP주소를 가져오는데 실패하였습니다.');
+        console.error(`에러: ${err}`)
+    } else {
+        console.log('nmsg.nicovideo.jp : ' + result)
+        ip = result;
+    }
+})
+
 function sleep(ms) {
     return new Promise(resolve => {
         setTimeout(resolve, ms)
@@ -38,7 +52,7 @@ else {
         var reqbody = req.body;
         request.post({
             headers: { 'content-type': 'text/plain' },
-            url: 'http://202.248.252.234/api.json',
+            url: 'http://' + ip + '/api.json',
             body: reqbody
         }, async function (error, response, nmsgbody) {
             var jsonbody = JSON.parse(nmsgbody);
