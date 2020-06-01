@@ -334,3 +334,4 @@ ASALocalRun/
 *.crt
 *.csr
 *.key
+*.zip
