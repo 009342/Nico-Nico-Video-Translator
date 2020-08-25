@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
-var version = '1.0';
+var version = '1.3';
 var ip = '255.255.255.255';
 app.use(bodyParser.text());
 console.log('');

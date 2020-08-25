@@ -66,7 +66,7 @@ else {
                 var page = [[]];
                 for (var i in jsonbody) {
                     if (jsonbody[i].chat && jsonbody[i].chat.content) {
-                        var str = jsonbody[i].chat.content.replace(/\n/g, "\u21B5"); //최대한 안 쓰일 것 같은 한자로 배정,
+                        var str = jsonbody[i].chat.content.replace(/\n/g, "\u21B5"); //최대한 안 쓰일 것 같은 문자(↵)로 배정, 나중에 문제생기면 누가 고쳐주시면 감사하겠습니다.
                         chats.push(str);
                     }
                 }
