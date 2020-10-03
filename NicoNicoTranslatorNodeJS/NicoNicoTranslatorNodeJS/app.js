@@ -17,8 +17,12 @@ var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
-var version = '1.0';
+var version = '1.3';
 var ip = '255.255.255.255';
+function isEmpty(text) {
+    return text == null || text.match(/^\s*$/) !== null;
+} //https://www.nicovideo.jp/watch/sm26561659
+exports.isEmpty = isEmpty;
 app.use(bodyParser.text());
 console.log('');
 console.log('NicoNicoTranslator (' + version + '-nodejs)');
@@ -67,7 +71,8 @@ else {
                 for (var i in jsonbody) {
                     if (jsonbody[i].chat && jsonbody[i].chat.content) {
                         var str = jsonbody[i].chat.content.replace(/\n/g, "\u21B5"); //최대한 안 쓰일 것 같은 문자(↵)로 배정, 나중에 문제생기면 누가 고쳐주시면 감사하겠습니다.
-                        chats.push(str);
+                        if (!isEmpty(str))
+                            chats.push(str);
                     }
                 }
                 var count = 0;
@@ -102,7 +107,7 @@ else {
                 var results = result.split(/\r?\n/);
                 c = 0;
                 for (var i in jsonbody) {
-                    if (jsonbody[i].chat && jsonbody[i].chat.content) {
+                    if (jsonbody[i].chat && jsonbody[i].chat.content && !isEmpty(jsonbody[i].chat.content)) {
                         jsonbody[i].chat.content = results[c++].replace(/\u21B5/g, "\n");
                     }
                 }
