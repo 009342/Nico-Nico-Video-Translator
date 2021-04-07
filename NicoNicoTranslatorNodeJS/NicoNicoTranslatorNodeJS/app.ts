@@ -9,7 +9,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
-var version = '1.5';
+var version = '1.6';
 var ip = '255.255.255.255';
 
 export function isEmpty(text: string): boolean {

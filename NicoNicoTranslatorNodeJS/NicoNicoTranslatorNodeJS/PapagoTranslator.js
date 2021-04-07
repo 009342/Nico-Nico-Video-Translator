@@ -19,7 +19,7 @@ function GenerateBody(source, target, text) {
     return body;
 }
 function GetAuthoriziation(deviceId, url, timestamp) {
-    var hmac = crypto.createHmac('md5', 'v' + '1.' + '5.3' + '_e6' + '02' + '6dba' + 'bc');
+    var hmac = crypto.createHmac('md5', 'v1.' + '5.6' + '_9' + '7f' + '69' + '18' + '302');
     var data = hmac.update(deviceId + '\n' + url + '\n' + timestamp);
     var result = data.digest('base64');
     return result;
