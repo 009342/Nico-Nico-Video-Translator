@@ -17,7 +17,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var request = require('request');
 var PapagoTranslator = require('./PapagoTranslator');
-var version = '1.6';
+var version = '1.7';
 var ip = '255.255.255.255';
 function isEmpty(text) {
     return text == null || text.match(/^\s*$/) !== null;
